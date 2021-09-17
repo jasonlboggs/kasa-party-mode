@@ -11,11 +11,6 @@ class HSVT:
     def __str__(this):
         return f'Hue: {this.hue} | Sat: {this.sat} | Volume: {this.volume} | Temp: {this.temp}'
 
-def rainbow():
-    for i in range(360):
-        if i % 5 == 0:
-            yield HSVT(i,100,100)
-
 def christmas():
     yield HSVT(0,100,100)
     yield HSVT(120,100,100)
@@ -38,6 +33,11 @@ def st_pat():
 def glow():
     yield HSVT(249,61,22)
 
+def rainbow():
+    for i in range(360):
+        if i % 5 == 0:
+            yield HSVT(i,100,100)
+
 class __ModeInternal:
     def __init__(this, sync, random, transition_time, sleep_time, colors):
         this.sync = sync
@@ -48,7 +48,7 @@ class __ModeInternal:
 
 modes = {}
 #                                   sync,  random trans sleep colors
-modes['Christmas'] = __ModeInternal(False, True,  None, None, christmas())
+modes['Christmas'] = __ModeInternal(False, True,  1000, 4,    christmas())
 modes['Merica'] =    __ModeInternal(True,  False, None, 2.5,  merica())
 modes['VDay'] =      __ModeInternal(True,  False, None, None, v_day())
 modes['StPat'] =     __ModeInternal(True,  False, None, 2.5,  st_pat())
