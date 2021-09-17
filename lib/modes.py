@@ -58,6 +58,7 @@ modes['VDay'] =      Mode(True,  False, None, None, v_day())
 modes['StPat'] =     Mode(True,  False, None, 2.5,  st_pat())
 modes['Glow'] =      Mode(True,  False, None, None, glow())
 modes['Rainbow'] =   Mode(True,  False, 100,  0.1,  rainbow())
+modes['Disco'] =     Mode(False, True,  100,  0.1,  rainbow())
 
 def list():
     return '\n\t'.join(modes.keys())
