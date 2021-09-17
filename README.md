@@ -19,7 +19,7 @@ chmod 755 party.py
 ## Usage
 ### Args: ModeName, Bulb IP list
 ```
-./party.py Merica, 100,101,102,103
+./party.py Merica 100,101,102,103
 ```
 
 ### Modes
