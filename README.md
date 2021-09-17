@@ -9,7 +9,7 @@ Install python-kasa (https://github.com/python-kasa/python-kasa)
 
 ## Usage
 ### Args: ModeName, Bulb IP list
-`$ ./Party.py Merica, 100,101,102,103`
+`$ ./party.py Merica, 100,101,102,103`
 
 ## Modes
-Execute party.py without any params or see `lib/partymodes.py` for available modes
+Execute party.py without any params or see `lib/modes.py` for available modes
