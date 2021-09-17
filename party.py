@@ -1,11 +1,5 @@
 #!/usr/bin/env python3
 
-#  Install python-kasa
-#  $ sudo pip3 install python-kasa
-
-#Usage:
-#./party.py Merica '100,101,102,103'
-
 import sys
 import time
 import socket
@@ -15,7 +9,6 @@ import asyncio
 import multiprocessing
 from lib import kasabulb, modes
 from kasa import SmartBulb
-from multiprocessing.pool import ThreadPool as Pool
 
 def list_modes():
     print(f'Available party modes:\n\t{modes.list()}')
