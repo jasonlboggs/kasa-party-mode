@@ -13,7 +13,7 @@ import signal
 import random
 import asyncio
 import multiprocessing
-from lib import partymodes
+from lib import kasabulb, partymodes
 from kasa import SmartBulb
 from multiprocessing.pool import ThreadPool as Pool
 
@@ -36,7 +36,7 @@ def init_bulb(IP):
     try:
         bulb = SmartBulb(IP)
         asyncio.run(bulb.update())
-        print(f'Bulb: {bulb.alias}')
+        print(f'Found Bulb: {bulb.alias}')
     except Exception as ex:
         print(f'Error initializing {IP}: {ex}')
         bulb = None
@@ -45,28 +45,17 @@ def init_bulb(IP):
 def get_bulbs():
     bulbs = []
     for IP in IPs:
-        bulb = init_bulb(IP)
-        if bulb is not None:
-            bulbs.append(bulb)
+        smartbulb = init_bulb(IP)
+        if smartbulb is not None:
+            bulbs.append(kasabulb.KasaBulb(smartbulb))
     return bulbs
-
-def set_bulb(bulb, hsvt, trans_time):
-    try:
-        if hsvt.temp is not None:
-            asyncio.run(bulb.set_brightness(hsvt.volume, transition=trans_time))
-            asyncio.run(bulb.set_color_temp(hsvt.temp, transition=trans_time))
-        else:
-            asyncio.run(bulb.set_hsv(hsvt.hue, hsvt.sat, hsvt.volume, transition=trans_time))
-
-        asyncio.run(bulb.update())
-    except Exception as ex:
-        print(f'Error with set_set(): {ex}')
 
 def stop(sig, frame):
     print('WARNING: Quitting Party mode!')
     bulbs = get_bulbs()
-    for bulb in bulbs:
-        asyncio.run(bulb.turn_off())
+    for kasabulb in bulbs:
+        kasabulb.turnoff()
+
     sys.exit(0)
 
 if len(sys.argv) != 3:
@@ -110,7 +99,7 @@ while True:
     for bulb in bulbs:
         if not active_mode.sync:
             hsvt = random.choice(active_mode.colors)
-        p = multiprocessing.Process(target=set_bulb, args=(bulb, hsvt, active_mode.transition_time,))
+        p = multiprocessing.Process(target=bulb.set, args=(hsvt, active_mode.transition_time,))
         p.start()
         processes.append(p)
 
