@@ -1,5 +1,6 @@
 
 DEFAULT_SLEEP_TIME = 1
+RAINBOW_MODULO = 5
 
 class HSVT:
     def __init__(this, hue, sat, volume, temp=None):
@@ -35,10 +36,10 @@ def glow():
 
 def rainbow():
     for i in range(360):
-        if i % 5 == 0:
+        if i % RAINBOW_MODULO == 0:
             yield HSVT(i,100,100)
 
-class __ModeInternal:
+class Mode:
     def __init__(this, sync, random, transition_time, sleep_time, colors):
         this.sync = sync
         this.random = random
@@ -46,26 +47,17 @@ class __ModeInternal:
         this.sleep_time = sleep_time if sleep_time is not None else DEFAULT_SLEEP_TIME
         this.colors = list(colors)
 
-modes = {}
-#                                   sync,  random trans sleep colors
-modes['Christmas'] = __ModeInternal(False, True,  1000, 4,    christmas())
-modes['Merica'] =    __ModeInternal(True,  False, None, 2.5,  merica())
-modes['VDay'] =      __ModeInternal(True,  False, None, None, v_day())
-modes['StPat'] =     __ModeInternal(True,  False, None, 2.5,  st_pat())
-modes['Glow'] =      __ModeInternal(True,  False, None, None, glow())
-modes['Rainbow'] =   __ModeInternal(True,  False, 100,  0.1,  rainbow())
-
-def get_modes():
-    return '\n\t'.join(modes.keys())
-
-class Mode:
-    def __init__(this, name):
-        mode = modes[name]
-        this.sync = mode.sync
-        this.random = mode.random
-        this.transition_time = mode.transition_time
-        this.sleep_time = mode.sleep_time
-        this.colors = mode.colors
-
     def __str__(this):
         return f'Sync: {this.sync}\nRandom: {this.random}\nTransition time: {this.transition_time}\nSleep time: {this.sleep_time}\nColors: {this.colors}'
+
+modes = {}
+#                         sync,  random trans sleep colors
+modes['Christmas'] = Mode(False, True,  1000, 4,    christmas())
+modes['Merica'] =    Mode(True,  False, None, 2.5,  merica())
+modes['VDay'] =      Mode(True,  False, None, None, v_day())
+modes['StPat'] =     Mode(True,  False, None, 2.5,  st_pat())
+modes['Glow'] =      Mode(True,  False, None, None, glow())
+modes['Rainbow'] =   Mode(True,  False, 100,  0.1,  rainbow())
+
+def list():
+    return '\n\t'.join(modes.keys())

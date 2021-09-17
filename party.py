@@ -13,12 +13,12 @@ import signal
 import random
 import asyncio
 import multiprocessing
-from lib import kasabulb, partymodes
+from lib import kasabulb, modes
 from kasa import SmartBulb
 from multiprocessing.pool import ThreadPool as Pool
 
-def display_modes():
-    print(f'Available party modes:\n\t{partymodes.get_modes()}')
+def list_modes():
+    print(f'Available party modes:\n\t{modes.list()}')
 
 def get_ip_address():
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -61,7 +61,7 @@ def stop(sig, frame):
 if len(sys.argv) != 3:
     print('Invalid arguments')
     print('Usage: ./party.py ModeName 100,101,102,103')
-    display_modes()
+    list_modes()
     exit(-1)
 
 DESIRED_MODE = sys.argv[1]
@@ -72,10 +72,10 @@ signal.signal(signal.SIGINT, stop)
 set_ips()
 
 try:
-    active_mode = partymodes.Mode(DESIRED_MODE)
+    active_mode = modes.modes[DESIRED_MODE]
 except KeyError:
     print(f'Mode "{DESIRED_MODE}" not found')
-    display_modes()
+    list_modes()
     exit(-1)
 
 i = 0
