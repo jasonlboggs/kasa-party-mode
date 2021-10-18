@@ -3,10 +3,8 @@
 import sys
 import time
 import socket
-import signal
 import random
 import asyncio
-import multiprocessing
 from lib import kasabulb, modes
 from kasa import SmartBulb
 
@@ -18,85 +16,97 @@ def get_ip_address():
     s.connect(("8.8.8.8", 80))
     return s.getsockname()[0]
 
-def set_ips():
+def set_ips(ips):
+    _ips = ips
     ip_parts = get_ip_address().split('.')
     subnet = '.'.join(ip_parts[:3])
-    for i,ip in enumerate(IPs):
-        IPs[i] = f'{subnet}.{ip}'
+    for i,ip in enumerate(_ips):
+        _ips[i] = f'{subnet}.{ip}'
+    return _ips
 
-def init_bulb(IP):
+def check_args():
+    if len(sys.argv) < 3:
+        print('Invalid arguments')
+        print('Usage: ./party.py ModeName 100,101,102,103')
+        list_modes()
+        exit(-1)
+
+async def init_bulb(IP):
     bulb = None
     try:
         bulb = SmartBulb(IP)
-        asyncio.run(bulb.update())
+        await bulb.update()
         print(f'Found Bulb: {bulb.alias}')
     except Exception as ex:
         print(f'Error initializing {IP}: {ex}')
         bulb = None
     return bulb
 
-def get_bulbs():
+async def get_bulbs():
     bulbs = []
-    for IP in IPs:
-        smartbulb = init_bulb(IP)
+    input_ips = sys.argv[2].split(',')
+    ips = set_ips(input_ips)
+
+    for ip in ips:
+        smartbulb = await init_bulb(ip)
         if smartbulb is not None:
             bulbs.append(kasabulb.KasaBulb(smartbulb))
     return bulbs
 
-def stop(sig, frame):
+async def stop():
     print('WARNING: Quitting Party mode!')
-    bulbs = get_bulbs()
-    for kasabulb in bulbs:
-        kasabulb.turnoff()
-
+    bulbs = await get_bulbs()
+    for bulb in bulbs:
+        await bulb.turnoff()
     sys.exit(0)
 
-if len(sys.argv) != 3:
-    print('Invalid arguments')
-    print('Usage: ./party.py ModeName 100,101,102,103')
-    list_modes()
-    exit(-1)
-
-DESIRED_MODE = sys.argv[1]
-IPs = sys.argv[2].split(',')
-
-signal.signal(signal.SIGINT, stop)
-
-set_ips()
-
-try:
-    active_mode = modes.modes[DESIRED_MODE]
-except KeyError:
-    print(f'Mode "{DESIRED_MODE}" not found')
-    list_modes()
-    exit(-1)
-
-i = 0
-bulbs = None
-
-print(f'Computed IPs: {IPs}')
-
-while True:
-    if bulbs is None or len(bulbs) == 0:
-        bulbs = get_bulbs()
-
-    if len(bulbs) == 0:
-        print('No valid bulbs found')
+async def start():
+    check_args()
+    desired_mode = sys.argv[1]
+    try:
+        active_mode = modes.modes[desired_mode.upper()]
+    except KeyError:
+        print(f'Mode "{desired_mode}" not found')
+        list_modes()
         exit(-1)
 
-    i += 1
-    i = i % len(active_mode.colors)
-    hsvt = random.choice(active_mode.colors) if active_mode.random else active_mode.colors[i]
+    DEBUG = False if len(sys.argv) < 4 else True
+    bulbs = await get_bulbs()
+    i = 0
 
-    processes = []
-    for bulb in bulbs:
-        if not active_mode.sync:
+    while True:
+        if bulbs is None or len(bulbs) == 0:
+            bulbs = await get_bulbs()
+
+        if len(bulbs) == 0:
+            print('No valid bulbs found')
+            exit(-1)
+
+        i += 1
+        i = i % len(active_mode.colors)
+        if active_mode.random:
             hsvt = random.choice(active_mode.colors)
-        p = multiprocessing.Process(target=bulb.set, args=(hsvt, active_mode.transition_time,))
-        p.start()
-        processes.append(p)
+        else:
+            hsvt = active_mode.colors[i]
 
-    for p in processes:
-        p.join()
+        if DEBUG: print ('------------------------------------------------------------------------------')
+        tasks = []
+        for bulb in bulbs:
+            print_val = ''
+            if not active_mode.sync:
+                current_hsvt = modes.HSVT(bulb.bulb.hsv[0], bulb.bulb.hsv[1], bulb.bulb.hsv[2], bulb.bulb.color_temp)
+                available_colors = [color for color in active_mode.colors if color.id != current_hsvt.id]
+                hsvt = random.choice(available_colors)
+                print_val = f'{current_hsvt.id} --> '
+            tasks.append(asyncio.create_task(bulb.set(hsvt, active_mode.transition_time, not active_mode.sync)))
+            print_val += hsvt.id
+            if DEBUG: print (print_val)
+        await asyncio.wait(tasks)
 
-    time.sleep(active_mode.sleep_time)
+        time.sleep(active_mode.sleep_time)
+
+if __name__ == '__main__':
+    try:
+       asyncio.run(start())
+    except KeyboardInterrupt:
+       asyncio.run(stop())

@@ -8,9 +8,10 @@ class HSVT:
         this.sat = sat
         this.volume = volume
         this.temp = temp
+        this.id = f'{this.hue or 0}-{this.sat or 0}-{this.volume or 0}-{this.temp or 0}'
 
     def __str__(this):
-        return f'Hue: {this.hue} | Sat: {this.sat} | Volume: {this.volume} | Temp: {this.temp}'
+        this.id
 
 def christmas():
     yield HSVT(0,100,100)
@@ -39,6 +40,10 @@ def rainbow():
         if i % RAINBOW_MODULO == 0:
             yield HSVT(i,100,100)
 
+def halloween():
+    for i in range(0,40):
+        yield HSVT(i,100,100)
+
 class Mode:
     def __init__(this, sync, random, transition_time, sleep_time, colors):
         this.sync = sync
@@ -52,13 +57,14 @@ class Mode:
 
 modes = {}
 #                         sync,  random trans sleep colors
-modes['Christmas'] = Mode(False, True,  1000, 4,    christmas())
-modes['Merica'] =    Mode(True,  False, None, 2.5,  merica())
-modes['VDay'] =      Mode(True,  False, None, None, v_day())
-modes['StPat'] =     Mode(True,  False, None, 2.5,  st_pat())
-modes['Glow'] =      Mode(True,  False, None, None, glow())
-modes['Rainbow'] =   Mode(True,  False, 100,  0.1,  rainbow())
-modes['Disco'] =     Mode(False, True,  100,  0.1,  rainbow())
+modes['CHRISTMAS'] = Mode(False, True,  1000, 4,    christmas())
+modes['MERICA'] =    Mode(True,  False, None, 2.5,  merica())
+modes['VDAY'] =      Mode(True,  False, None, None, v_day())
+modes['STPAT'] =     Mode(True,  False, None, 2.5,  st_pat())
+modes['GLOW'] =      Mode(True,  False, None, None, glow())
+modes['RAINBOW'] =   Mode(True,  False, 50,   0.05, rainbow())
+modes['DISCO'] =     Mode(False, True,  10,   0.01, rainbow())
+modes['HALLOWEEN'] = Mode(False, True,  None, 0.25, halloween())
 
 def list():
     return '\n\t'.join(modes.keys())
