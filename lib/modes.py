@@ -41,8 +41,9 @@ def rainbow():
             yield HSVT(i,100,100)
 
 def halloween():
-    for i in range(0,40):
-        yield HSVT(i,100,100)
+    for h in range(0,40):
+        for v in range(0,100):
+            yield HSVT(h,100,i)
 
 class Mode:
     def __init__(this, sync, random, transition_time, sleep_time, colors):
@@ -64,7 +65,7 @@ modes['STPAT'] =     Mode(True,  False, None, 2.5,  st_pat())
 modes['GLOW'] =      Mode(True,  False, None, None, glow())
 modes['RAINBOW'] =   Mode(True,  False, 50,   0.05, rainbow())
 modes['DISCO'] =     Mode(False, True,  10,   0.01, rainbow())
-modes['HALLOWEEN'] = Mode(False, True,  None, 0.25, halloween())
+modes['HALLOWEEN'] = Mode(False, True,  150,  0.15, halloween())
 
 def list():
     return '\n\t'.join(modes.keys())
