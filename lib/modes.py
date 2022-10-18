@@ -43,7 +43,7 @@ def rainbow():
 def halloween():
     for h in range(0,40):
         for v in range(0,100):
-            yield HSVT(h,100,i)
+            yield HSVT(h,100,v)
 
 class Mode:
     def __init__(this, sync, random, transition_time, sleep_time, colors):
